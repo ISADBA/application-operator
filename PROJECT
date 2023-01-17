@@ -1,0 +1,6 @@
+domain: isadba.com
+layout:
+- go.kubebuilder.io/v3
+projectName: application-operator
+repo: github.com/ISADBA/application-operator
+version: "3"
