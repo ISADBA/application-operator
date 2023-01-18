@@ -18,13 +18,18 @@ package controllers
 
 import (
 	"context"
+	"fmt"
+	"time"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	appsv1 "github.com/ISADBA/application-operator/api/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // ApplicationReconciler reconciles a Application object
@@ -50,7 +55,35 @@ func (r *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	_ = log.FromContext(ctx)
 
 	// TODO(user): your logic here
+	fmt.Printf("reconcile %s", req.Name)
+	// 获取Application
+	app := &appsv1.Application{}
+	if err := r.Get(ctx, req.NamespacedName, app); err != nil {
+		if errors.IsNotFound(err) {
+			fmt.Println("the Application is not found!")
+			return ctrl.Result{}, nil
+		}
+		fmt.Println(err, "failed to get the Application")
+		return ctrl.Result{RequeueAfter: 1 * time.Minute}, err
+	}
 
+	// 创建Pods
+	for i := 0; i < int(app.Spec.Replicas); i++ {
+		pod := &corev1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      fmt.Sprintf("%s-%d", app.Name, i),
+				Namespace: app.Namespace,
+				Labels:    app.Labels,
+			},
+			Spec: app.Spec.Template.Spec,
+		}
+		if err := r.Create(ctx, pod); err != nil {
+			fmt.Println(err, "failed to created Pod")
+			return ctrl.Result{RequeueAfter: 1 * time.Minute}, err
+		}
+		fmt.Printf("the Pod (%s) has created", pod.Name)
+	}
+	fmt.Println("all pods has created")
 	return ctrl.Result{}, nil
 }
 
