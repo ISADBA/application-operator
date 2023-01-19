@@ -80,7 +80,7 @@ func (r *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			fmt.Println(err, "failed to created Pod")
 			return ctrl.Result{RequeueAfter: 1 * time.Minute}, err
 		}
-		fmt.Println(fmt.Sprintf("the Pod (%s) has created", pod.Name))
+		fmt.Printf("the Pod (%s) has created", pod.Name)
 	}
 	fmt.Println("all pods has created")
 	return ctrl.Result{}, nil
