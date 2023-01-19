@@ -27,7 +27,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	appsv1 "github.com/ISADBA/application-operator/api/v1"
+	dappsv1 "github.com/ISADBA/application-operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -50,14 +50,13 @@ type ApplicationReconciler struct {
 // the user.
 //
 // For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.1/pkg/reconcile
+// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.10.0/pkg/reconcile
 func (r *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
 	// TODO(user): your logic here
-	fmt.Printf("reconcile %s", req.Name)
 	// 获取Application
-	app := &appsv1.Application{}
+	app := &dappsv1.Application{}
 	if err := r.Get(ctx, req.NamespacedName, app); err != nil {
 		if errors.IsNotFound(err) {
 			fmt.Println("the Application is not found!")
@@ -81,7 +80,7 @@ func (r *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			fmt.Println(err, "failed to created Pod")
 			return ctrl.Result{RequeueAfter: 1 * time.Minute}, err
 		}
-		fmt.Printf("the Pod (%s) has created", pod.Name)
+		fmt.Println(fmt.Sprintf("the Pod (%s) has created", pod.Name))
 	}
 	fmt.Println("all pods has created")
 	return ctrl.Result{}, nil
@@ -90,6 +89,6 @@ func (r *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 // SetupWithManager sets up the controller with the Manager.
 func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&appsv1.Application{}).
+		For(&dappsv1.Application{}).
 		Complete(r)
 }
