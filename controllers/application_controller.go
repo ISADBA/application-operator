@@ -52,17 +52,17 @@ type ApplicationReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.10.0/pkg/reconcile
 func (r *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	l := log.FromContext(ctx)
 
 	// TODO(user): your logic here
 	// 获取Application
 	app := &dappsv1.Application{}
 	if err := r.Get(ctx, req.NamespacedName, app); err != nil {
 		if errors.IsNotFound(err) {
-			fmt.Println("the Application is not found!")
+			l.Info("the Application is not found!")
 			return ctrl.Result{}, nil
 		}
-		fmt.Println(err, "failed to get the Application")
+		l.Error(err, "failed to get the Application")
 		return ctrl.Result{RequeueAfter: 1 * time.Minute}, err
 	}
 
@@ -77,12 +77,12 @@ func (r *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			Spec: app.Spec.Template.Spec,
 		}
 		if err := r.Create(ctx, pod); err != nil {
-			fmt.Println(err, "failed to created Pod")
+			l.Error(err, "failed to created Pod")
 			return ctrl.Result{RequeueAfter: 1 * time.Minute}, err
 		}
-		fmt.Printf("the Pod (%s) has created", pod.Name)
+		l.Info(fmt.Sprintf("the Pod (%s) has created", pod.Name))
 	}
-	fmt.Println("all pods has created")
+	l.Info("all pods has created")
 	return ctrl.Result{}, nil
 }
 
